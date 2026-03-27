@@ -11,3 +11,8 @@ class Trait(var name:String){
 class Upgrade(var name:String){
     var description:String=""
 }
+
+class Feat(var name:String){
+    var requirements=""
+    var description=""
+}

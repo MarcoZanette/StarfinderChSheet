@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
                             val chList:MutableList<Character>
 
                         }
+
                     }
                 }
             }
