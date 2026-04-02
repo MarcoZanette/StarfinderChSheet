@@ -13,14 +13,18 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.example.hojadepersonaje.characterdata.RPCharacter
 import com.example.hojadepersonaje.ui.theme.HojaDePersonajeTheme
+import com.example.hojadepersonaje.views.CharacterSheetView
+import com.example.hojadepersonaje.views.MainMenuView
 import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
@@ -31,29 +35,50 @@ class MainActivity : ComponentActivity() {
         setContent {
             HojaDePersonajeTheme {
 
+                val rpCharList= mutableListOf<RPCharacter>()
+
+
                 Box(modifier=Modifier.windowInsetsPadding(insets= WindowInsets.statusBars))
                 {
-                    val navController:NavHostController=rememberNavController()
+                    val backStack= remember{ mutableStateListOf<Any>(Home) }//lista que se inicia con "Home" como unico elemento, ya que es l apantalla inicial de la app
+                    NavDisplay(
+                        backStack=backStack,
+                        onBack={
+                            backStack.removeLastOrNull()},
+                        entryProvider={
+                                key->
+                            when(key){
+                                is Home-> NavEntry(key) {
+                                    MainMenuView(
+                                        onRPCharLoad = {ch->
+                                            backStack.add(CharacterSheet(ch))
+                                        },
+                                        onCreateNewRPChar = {n->
+                                            backStack.add(CharacterSheet(rpChar= RPCharacter(99999,n)))
+                                        },
+                                        rpCharList = rpCharList,
 
-                    NavHost(navController=navController,startDestination=MainMenu){
+                                    )
+                                }
+                                is CharacterSheet->NavEntry(key){ch->
 
-                        composable<MainMenu>{
-                            val chList:MutableList<Character>
+                                    val c=ch as CharacterSheet
+                                    CharacterSheetView(c.rpChar,{backStack.removeLastOrNull()})
 
+                                }
+                                else->NavEntry(key=Unit){
+                                    Text(text="Error de navegacion 1")//TODO Error de navegacion
+                                }
+                            }
                         }
-
-                    }
+                    )
                 }
+
+
             }
         }
     }
+    data object Home
+    data class CharacterSheet(var rpChar: RPCharacter)
 }
 
-@Serializable
-object MainMenu
-
-@Serializable
-data class NewChView(val chName:String)
-
-@Serializable
-data class ChView(val chId:String)

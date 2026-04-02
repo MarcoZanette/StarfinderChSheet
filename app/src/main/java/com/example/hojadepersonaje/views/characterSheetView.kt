@@ -31,7 +31,7 @@ fun CharacterSheetView(){
 }
 
 @Composable
-fun CharacterSheetView(character: RPCharacter){
+fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
 
     Surface(color = MaterialTheme.colorScheme.surface,modifier=Modifier) {
         Column(modifier=Modifier.fillMaxSize()) {
@@ -117,5 +117,5 @@ fun ChMenuItem(modifier: Modifier =Modifier){
 @Composable
 fun ChsPrev(){
     var ch= RPCharacter(0,"Npc")
-    CharacterSheetView(ch)
+    CharacterSheetView(ch,{})
 }

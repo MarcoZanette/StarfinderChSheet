@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">hojaDePersonaje</string>
+    <string name="delete">Delete</string>
+    <string name="confirmButton">Confirm</string>
+    <string name="dismissButton">Cancel</string>
+    <string name="arrow_back">Back</string>
+    <string name="newCharacter">Create new character?</string>
+    <string name="newCharacterQ">Do you wish to create a new character?</string>
+    <string name="newCharacterName">Character Name:</string>
 </resources>
