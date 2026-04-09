@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(alignment = Alignment.Center)
-                    .clickable(onClick = { onClick })
+                    .clickable(onClick = { onClick() })
             )
         }
 

@@ -20,12 +20,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
+import com.example.hojadepersonaje.MainActivity.CharacterSheet
+import com.example.hojadepersonaje.MainActivity.Home
+import com.example.hojadepersonaje.characterdata.Action
+import com.example.hojadepersonaje.characterdata.Item
 import com.example.hojadepersonaje.characterdata.RPCharacter
+import com.example.hojadepersonaje.characterdata.Spell
+import com.example.hojadepersonaje.characterdata.Weapon
 import com.example.hojadepersonaje.composables.CharacterInfoCard
 import com.example.hojadepersonaje.ui.theme.HojaDePersonajeTheme
 
@@ -49,7 +59,11 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
                 Box(modifier = Modifier
                     .padding(1.dp)
                     .fillMaxWidth(0.216f)
-                    .border(width = 1.dp, color= MaterialTheme.colorScheme.outline, shape = AbsoluteRoundedCornerShape(8.dp))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = AbsoluteRoundedCornerShape(8.dp)
+                    )
 
                 )
 
@@ -88,54 +102,52 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
                     )) {
 
                 }
-                Column(modifier=Modifier
-                    .padding(1.dp)
-                    .fillMaxSize()
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = AbsoluteRoundedCornerShape(8.dp)
-                    )
 
-                ) {
-                    val infoCardMod=Modifier
-                        .padding(2.dp)
-                        .border(
-                            width = 1.dp,
-                            color=MaterialTheme.colorScheme.primary,
-                            shape= AbsoluteRoundedCornerShape(8.dp)
-                        )
-                        .height(140.dp)
-                        .padding(8.dp)
-                    Row(horizontalArrangement = Arrangement.SpaceEvenly
-                        ,modifier=Modifier.fillMaxSize()) {
+                val backStack= remember{ mutableStateListOf<Any>(Menu) }
 
-                        CharacterInfoCard(
-                            modifier=Modifier.fillMaxWidth(0.5f),
-                            text="Actions",
-                            onClick = {
+                NavDisplay(
+                    backStack=backStack,
+                    onBack={
+                        backStack.removeLastOrNull()},
+                    entryProvider={
+                            key->
+                        when(key){
+                            is Menu-> NavEntry(key) {
+                                ChInfo({nav->backStack.add(InfoScreen(nav))})
+                            }
+                            is InfoScreen->NavEntry(key){inf->
 
-                            })
-                        CharacterInfoCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = "Spells",
-                            onClick = {
+                                if (inf is String)
+                                {
+                                    when (inf) {
+                                        equals("Actions") -> {
+                                            DescriptionView(character.actionList)
+                                        }
+
+                                        equals("Spells") -> {
+                                            DescriptionView(character.spells)
+                                        }
+
+                                        equals("Strikes") -> {
+                                            DescriptionView(character.strikes)
+                                        }
+
+                                        equals("Inventory") -> {
+                                            DescriptionView(character.inventory)
+                                        }
+
+                                    }
+                                }
+
 
                             }
-                        )
+                            else->NavEntry(key=Unit){
+                                Text(text="Error de navegacion 1")//TODO Error de navegacion
+                            }
+                        }
                     }
-                    Row() {
+                )
 
-                    }
-                    Row() {
-
-                    }
-
-
-                    Row(){
-
-                    }
-                }
             }
 
 
@@ -145,6 +157,58 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
 
 }
 
+
+
+@Composable fun ChInfo(navigate:(destination:Any)->Unit){
+    Column(modifier=Modifier
+        .padding(1.dp)
+        .fillMaxSize()
+        .border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline,
+            shape = AbsoluteRoundedCornerShape(8.dp)
+        )
+
+    ) {
+        val infoCardMod=Modifier
+            .padding(2.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = AbsoluteRoundedCornerShape(8.dp)
+            )
+            .height(140.dp)
+            .padding(8.dp)
+        Row(horizontalArrangement = Arrangement.SpaceEvenly
+            ,modifier=Modifier.fillMaxSize()) {
+
+            CharacterInfoCard(
+                modifier=Modifier.fillMaxWidth(0.5f),
+                text="Actions",
+                onClick = {
+
+                    navigate("Actions")
+                })
+            CharacterInfoCard(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Spells",
+                onClick = {
+                    navigate("Spells")
+                }
+            )
+        }
+        Row() {
+
+        }
+        Row() {
+
+        }
+
+
+        Row(){
+
+        }
+    }}
 
 @Composable
 fun ChMenuItem(modifier: Modifier =Modifier){
@@ -159,3 +223,6 @@ fun ChsPrev(){
     var ch= RPCharacter(0,"Npc")
     CharacterSheetView(ch,{})
 }
+
+data object Menu
+data class InfoScreen(var info:Any)
