@@ -1,7 +1,7 @@
 package com.example.hojadepersonaje.characterdata
 
-open class Item(var name:String) {
-    var description: String=""
+open class Item(override var name:String): CharacterProperty() {
+    override var description: String=""
     var actions=mutableListOf<Action>()
     var bulk:String=""
     var hands=0

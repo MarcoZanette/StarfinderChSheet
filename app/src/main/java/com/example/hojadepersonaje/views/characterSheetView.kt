@@ -1,6 +1,7 @@
 package com.example.hojadepersonaje.views
 
 import android.graphics.drawable.shapes.Shape
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,14 +17,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,11 +37,13 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.hojadepersonaje.MainActivity.CharacterSheet
 import com.example.hojadepersonaje.MainActivity.Home
 import com.example.hojadepersonaje.characterdata.Action
+import com.example.hojadepersonaje.characterdata.CharacterProperty
 import com.example.hojadepersonaje.characterdata.Item
 import com.example.hojadepersonaje.characterdata.RPCharacter
 import com.example.hojadepersonaje.characterdata.Spell
 import com.example.hojadepersonaje.characterdata.Weapon
 import com.example.hojadepersonaje.composables.CharacterInfoCard
+import com.example.hojadepersonaje.composables.NewItemPopup
 import com.example.hojadepersonaje.ui.theme.HojaDePersonajeTheme
 
 @Composable
@@ -49,7 +56,40 @@ fun CharacterSheetView(){
 @Composable
 fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
 
+    val showNewCharacterProperty= remember { mutableStateOf(false) }
+    var newCharacterProperty: CharacterProperty= CharacterProperty()
+    var newPropertyTxt= rememberTextFieldState()
+
     Surface(color = MaterialTheme.colorScheme.surface,modifier=Modifier) {
+
+        NewItemPopup(
+            showDialog = showNewCharacterProperty.value,
+            title="New Property",
+            onDismiss = { showNewCharacterProperty.value = false },
+            onConfirm = {
+
+                when (newCharacterProperty) {
+                    is Weapon->
+                        character.strikes.add(newCharacterProperty as Weapon)
+                    is Action->
+                        character.actionList.add(newCharacterProperty as Action)
+                    is Spell ->
+                        character.spells.add(newCharacterProperty as Spell)
+                    is Item->
+                        character.inventory.add(newCharacterProperty as Item)
+                }
+
+
+            }
+        ) {
+            TextField(
+                state=newPropertyTxt,
+                label= { Text("New Property") }
+            )
+        }
+
+
+
         Column(modifier=Modifier.fillMaxSize()) {
 
             Row(modifier=Modifier
@@ -113,36 +153,57 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
                             key->
                         when(key){
                             is Menu-> NavEntry(key) {
-                                ChInfo({nav->backStack.add(InfoScreen(nav))})
+                                ChInfo({infoScreenNav->
+
+
+                                    backStack.add(infoScreenNav)},character)
                             }
                             is InfoScreen->NavEntry(key){inf->
 
-                                if (inf is String)
-                                {
-                                    when (inf) {
-                                        equals("Actions") -> {
-                                            DescriptionView(character.actionList)
+                                    val infoScreen =inf as InfoScreen
+                                try{
+                                    Log.println(Log.DEBUG,"InfoScreenDebug"
+                                        ,"InfoScreen Size ${infoScreen.info.size}")
+                                }catch (e:Exception){
+                                    e.printStackTrace()
+                                }
+
+                                    when (infoScreen.info[0]) {
+                                        is Action -> {
+                                            DescriptionView(character.actionList){
+                                                newCharacterProperty= Action("",0)
+                                                showNewCharacterProperty.value=true
+                                            }
+
+
                                         }
 
-                                        equals("Spells") -> {
-                                            DescriptionView(character.spells)
+                                        is Spell -> {
+                                            DescriptionView(character.spells){
+
+                                            }
                                         }
 
-                                        equals("Strikes") -> {
-                                            DescriptionView(character.strikes)
+                                        is Weapon -> {
+                                            /*DescriptionView(character.strikes){TODO
+                                                s->
+                                                character.strikes.add(s)
+                                            }*/
                                         }
 
-                                        equals("Inventory") -> {
-                                            DescriptionView(character.inventory)
+                                        is Item -> {
+                                            DescriptionView(character.inventory){
+
+                                            }
                                         }
 
                                     }
-                                }
+
 
 
                             }
                             else->NavEntry(key=Unit){
-                                Text(text="Error de navegacion 1")//TODO Error de navegacion
+                                Text(text="Error de navegacion 2${key.toString()}")//TODO Error de navegacion
                             }
                         }
                     }
@@ -159,7 +220,7 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
 
 
 
-@Composable fun ChInfo(navigate:(destination:Any)->Unit){
+@Composable fun ChInfo(infoScreenNav:(destination:InfoScreen)->Unit,character: RPCharacter){
     Column(modifier=Modifier
         .padding(1.dp)
         .fillMaxSize()
@@ -187,13 +248,13 @@ fun CharacterSheetView(character: RPCharacter,popBackStack:()->Unit){
                 text="Actions",
                 onClick = {
 
-                    navigate("Actions")
+                    infoScreenNav(InfoScreen(character.actionList))
                 })
             CharacterInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Spells",
                 onClick = {
-                    navigate("Spells")
+                    infoScreenNav(InfoScreen(character.spells))
                 }
             )
         }
@@ -224,5 +285,7 @@ fun ChsPrev(){
     CharacterSheetView(ch,{})
 }
 
+
 data object Menu
-data class InfoScreen(var info:Any)
+data class InfoScreen(var info: List<CharacterProperty>)
+data object CharacterScreen

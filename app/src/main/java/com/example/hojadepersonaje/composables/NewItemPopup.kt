@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.hojadepersonaje.R
+import com.example.hojadepersonaje.characterdata.CharacterProperty
+import com.example.hojadepersonaje.characterdata.Weapon
 
 
 @Composable
@@ -49,6 +51,34 @@ fun NewItemPopup(showDialog:Boolean=false,title:String,text:String,onDismiss:()-
     }
 
 }
+
+@Composable
+fun NewItemPopup(showDialog:Boolean=false,onDismiss:()->Unit,onConfirm:()->Unit,title:String,text:@Composable ()->Unit){
+
+    if(showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            text = text,
+            title = {
+                Text(title)
+            },
+            confirmButton = {
+                TextButton(onClick = { onConfirm() }) {
+                    Text(stringResource(R.string.confirmButton), color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onDismiss() }) {
+                    Text(stringResource(R.string.dismissButton), color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            textContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+
+}
+
 
 @Preview
 @Composable

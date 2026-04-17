@@ -1,7 +1,7 @@
 package com.example.hojadepersonaje.characterdata
 
-class Spell(var name:String) {
-    var description=""
+class Spell(override var name:String): CharacterProperty() {
+    override var description=""
     var traditions=mutableListOf<String>()
     var range=0
     var area=""
